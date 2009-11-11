@@ -22,22 +22,29 @@ module Remit
       super(name.to_s.gsub(/(^|_)(.)/) { $2.upcase }, namespace)
     end
   end
+  
+  class ResponseMetadata < BaseResponse
+    parameter :request_id
+  end
 
   class Response < BaseResponse
-    parameter :request_id
+    parameter :response_metadata, :type => ResponseMetadata
 
-    attr_accessor :status
     attr_accessor :errors
-
+    attr_accessor :request_id
+    
     def initialize(xml)
       super
 
+      @errors = []
+
       if is?(:Response) && has?(:Errors)
-        @errors = elements(:Errors).collect do |error|
+        @request_id = element('RequestID').text
+        
+        @errors = elements('Errors/Error').collect do |error|
           Error.new(error)
         end
       else
-        @status = text_value(element(:Status))
         @errors = elements('Errors/Errors').collect do |error|
           ServiceError.new(error)
         end unless successful?
@@ -45,7 +52,7 @@ module Remit
     end
 
     def successful?
-      @status == ResponseStatus::SUCCESS
+      @errors.empty?
     end
 
     def node_name(name, namespace=nil)

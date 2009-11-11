@@ -6,16 +6,7 @@ module Remit
       action :Refund
       parameter :caller_description
       parameter :caller_reference, :required => true
-      parameter :caller_token_id, :required => true
-      parameter :charge_fee_to, :required => true
-      parameter :meta_data
       parameter :refund_amount, :type => Remit::RequestTypes::Amount
-      parameter :refund_recipient_description
-      parameter :refund_recipient_reference
-      parameter :refund_sender_description
-      parameter :refund_sender_reference
-      parameter :refund_sender_token_id, :required => true
-      parameter :transaction_date
       parameter :transaction_id, :required => true
 
       # The RefundAmount parameter has multiple components.  It is specified on the query string like
@@ -25,13 +16,13 @@ module Remit
       end
     end
 
-    class Response < Remit::Response
+    class RefundResponse < Remit::Response
       parser :rexml
-      parameter :transaction_response, :namespace => 'ns3', :type => TransactionResponse
+      parameter :refund_result, :type => TransactionResponse
     end
 
     def refund(request = Request.new)
-      call(request, Response)
+      call(request, RefundResponse)
     end
   end
 end

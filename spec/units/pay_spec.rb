@@ -6,33 +6,34 @@ describe "the Pay API" do
 
     before do
       doc = <<-XML
-        <ns3:PayResponse xmlns:ns3="http://fps.amazonaws.com/doc/2007-01-08/">
-          <ns3:TransactionResponse>
-            <TransactionId>abc123</TransactionId>
-            <Status>Initiated</Status>
-          </ns3:TransactionResponse>
-          <Status>Success</Status>
-          <RequestId>foo</RequestId>
-        </ns3:PayResponse>
+        <PayResponse xmlns="http://fps.amazonaws.com/doc/2008-09-17/">
+           <PayResult>
+              <TransactionId>14GK6BGKA7U6OU6SUTNLBI5SBBV9PGDJ6UL</TransactionId>
+              <TransactionStatus>Pending</TransactionStatus>
+           </PayResult>
+           <ResponseMetadata>
+              <RequestId>c21e7735-9c08-4cd8-99bf-535a848c79b4:0</RequestId>
+           </ResponseMetadata>
+        </PayResponse>        
       XML
 
-      @response = Remit::Pay::Response.new(doc)
+      @response = Remit::Pay::PayResponse.new(doc)
     end
 
     it "has a transaction response" do
-      @response.transaction_response.should_not be_nil
+      @response.pay_result.should_not be_nil
     end
 
     it "has a transaction id" do
-      @response.transaction_response.transaction_id.should == 'abc123'
+      @response.pay_result.transaction_id == '14GK6BGKA7U6OU6SUTNLBI5SBBV9PGDJ6UL'
     end
 
     it "has a transaction status" do
-      @response.transaction_response.status.should == 'Initiated'
+      @response.pay_result.transaction_status.should == 'Pending'
     end
 
     it "has status shortcuts" do
-      @response.transaction_response.should be_initiated
+      @response.pay_result.should be_pending
     end
   end
 
@@ -40,21 +41,18 @@ describe "the Pay API" do
     before do
       doc = <<-XML
         <?xml version=\"1.0\"?>
-        <ns3:PayResponse xmlns:ns3=\"http://fps.amazonaws.com/doc/2007-01-08/\">
-          <Status>Failure</Status>
+        <Response>
           <Errors>
-            <Errors>
-              <ErrorType>Business</ErrorType>
-              <IsRetriable>false</IsRetriable>
-              <ErrorCode>InvalidParams</ErrorCode>
-              <ReasonText>callerTokenId can not be empty</ReasonText>
-            </Errors>
+            <Error>
+              <Code>InvalidParams</Code>
+              <Message>callerReference can not be empty </Message>
+            </Error>
           </Errors>
-          <RequestId>7966a2d9-5ce9-4902-aefc-b01d254c931a:0</RequestId>
-        </ns3:PayResponse>
+          <RequestID>7ca7472b-1ce1-408b-be8f-e7e838090b56</RequestID>
+        </Response>
       XML
 
-      @response = Remit::Pay::Response.new(doc)
+      @response = Remit::Pay::PayResponse.new(doc)
       @error = @response.errors.first
     end
 
@@ -62,47 +60,46 @@ describe "the Pay API" do
 
     describe "with an invalid params error" do
       it "should be a service error" do
-        @error.should be_kind_of(Remit::ServiceError)
+        @error.should be_kind_of(Remit::Error)
       end
 
-      it "should have an error type of 'Business'" do
-        @error.error_type.should == 'Business'
-      end
+      #it "should have an error type of 'Business'" do
+      #  @error.error_type.should == 'Business'
+      #end
 
       it "should have an error code of 'InvalidParams'" do
-        @error.error_code.should == 'InvalidParams'
+        @error.code.should == 'InvalidParams'
       end
 
-      it "should not be retriable" do
-        @error.is_retriable.should == 'false'
+      #it "should not be retriable" do
+      #  @error.is_retriable.should == 'false'
+      #end
+      it "should have a request id" do
+        @response.request_id.should == '7ca7472b-1ce1-408b-be8f-e7e838090b56' 
       end
 
-      it "should have reason text" do
-        @error.reason_text.should == 'callerTokenId can not be empty'
+      it "should have message" do
+        @error.message.should == 'callerReference can not be empty '
       end
     end
   end
 
-  describe "for a failed request" do
+  describe "for a failed response" do
     before do
       doc = <<-XML
         <?xml version=\"1.0\"?>
-        <ns3:PayResponse xmlns:ns3=\"http://fps.amazonaws.com/doc/2007-01-08/\">
-          <Status>Failure</Status>
+        <Response>
           <Errors>
-            <Errors>
-              <ErrorType>Business</ErrorType>
-              <IsRetriable>false</IsRetriable>
-              <ErrorCode>TokenUsageError</ErrorCode>
-              <ReasonText>The token \"45XU7TLBN995ZQA2U1PS1ZCTJXJMJ3H1GH6VZAB82C1BGLK9X3AXUQDA3QDLJVPX\" has violated its usage policy.</ReasonText>
-              </Errors>
-            </Errors>
-            <RequestId>78acff80-b740-4b57-9301-18d0576e6855:0
-          </RequestId>
-        </ns3:PayResponse>
+            <Error>
+              <Code>IncompatibleTokens</Code>
+              <Message>The transaction could not be completed because the tokens have incompatible payment instructions: \nTransaction amount not equal to accepted value</Message>
+            </Error>
+          </Errors>
+          <RequestID>2f6ab78b-60a8-4c68-a067-93e2b6d49377</RequestID>
+        </Response>
       XML
 
-      @response = Remit::Pay::Response.new(doc)
+      @response = Remit::Pay::PayResponse.new(doc)
       @error = @response.errors.first
     end
 
@@ -110,23 +107,23 @@ describe "the Pay API" do
 
     describe "with a token usage error" do
       it "should be a service error" do
-        @error.should be_kind_of(Remit::ServiceError)
+        @error.should be_kind_of(Remit::Error)
       end
 
-      it "should have an error type of 'Business'" do
-        @error.error_type.should == 'Business'
+      #it "should have an error type of 'Business'" do
+      #  @error.error_type.should == 'Business'
+      #end
+
+      it "should have an error code of 'IncompatibleTokens'" do
+        @error.code.should == 'IncompatibleTokens'
       end
 
-      it "should have an error code of 'TokenUsageError'" do
-        @error.error_code.should == 'TokenUsageError'
-      end
+      #it "should not be retriable" do
+      #  @error.is_retriable.should == 'false'
+      #end
 
-      it "should not be retriable" do
-        @error.is_retriable.should == 'false'
-      end
-
-      it "should have reason text" do
-        @error.reason_text.should == 'The token "45XU7TLBN995ZQA2U1PS1ZCTJXJMJ3H1GH6VZAB82C1BGLK9X3AXUQDA3QDLJVPX" has violated its usage policy.'
+      it "should have message" do
+        @error.message.should == "The transaction could not be completed because the tokens have incompatible payment instructions: \nTransaction amount not equal to accepted value"
       end
     end
   end

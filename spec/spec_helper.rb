@@ -9,15 +9,15 @@ end
 
 describe 'a successful response', :shared => true do
   it 'should return success' do
-    @response.status.should == 'Success'
+    @response.should be_successful
   end
 
   it 'should not have any errors' do
-    @response.errors.should be_nil
+    @response.errors.should be_empty
   end
 
   it 'should have a request ID' do
-    @response.request_id.should_not be_nil
+    @response.response_metadata.request_id.should_not be_nil
   end
 end
 

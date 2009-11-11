@@ -6,7 +6,7 @@ require 'remit/common'
 module Remit
   class Amount < BaseResponse
     parameter :currency_code
-    parameter :amount, :type => :float
+    parameter :value, :type => :float
   end
 
   class TemporaryDeclinePolicy < BaseResponse
@@ -87,24 +87,21 @@ module Remit
 
   class TransactionResponse < BaseResponse
     parameter :transaction_id
-    parameter :status
-    parameter :status_detail
-    parameter :new_sender_token_usage, :type => TokenUsageLimit
+    parameter :transaction_status
 
-    %w(reserved success failure initiated reinitiated temporary_decline).each do |status_name|
+    %w(cancelled failure pending reserved success).each do |status_name|
       define_method("#{status_name}?") do
-        self.status == Remit::TransactionStatus.const_get(status_name.sub('_', '').upcase)
+        self.transaction_status == Remit::TransactionStatus.const_get(status_name.sub('_', '').upcase)
       end
     end
   end
 
   class TransactionStatus
+    CANCELLED         = 'Cancelled'
+    FAILURE           = 'Failure'
+    PENDING           = 'Pending'
     RESERVED          = 'Reserved'
     SUCCESS           = 'Success'
-    FAILURE           = 'Failure'
-    INITIATED         = 'Initiated'
-    REINITIATED       = 'Reinitiated'
-    TEMPORARYDECLINE  = 'TemporaryDecline'
   end
 
   class TokenType
@@ -140,8 +137,8 @@ module Remit
 
   module RequestTypes
     class Amount < Remit::Request
-      parameter :amount
       parameter :currency_code
+      parameter :value
     end
 
     class TemporaryDeclinePolicy < Remit::Request

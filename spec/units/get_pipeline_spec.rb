@@ -163,3 +163,24 @@ describe 'A postpaid pipeline' do
     @pipeline.pipeline_name.should == Remit::PipelineName::SETUP_POSTPAID
   end
 end
+
+describe 'A edit token pipeline' do
+  it_should_behave_like 'A pipeline'
+
+  before do
+    @pipeline_options.merge!({
+      :caller_reference => "N2PCBEIA5864E27EL7C86PJL1FGUGPBL61QTJJM5GQK265SPEN8ZKIJPMQARDVJK",
+      :token_id => "N5PCME5A5Q6FE2QEB7CD64JLGFTUGXBE61HTCJMGGAK2R5IPEQ8EKIVP3QAVD7JP"
+    })
+    
+    @pipeline = remit.get_edit_pipeline(@pipeline_options)
+  end
+
+  it 'should create a EditPipeline' do
+    @pipeline.class.should == Remit::GetPipeline::EditPipeline
+  end
+
+  it 'should have the right name' do
+    @pipeline.pipeline_name.should == Remit::PipelineName::EDIT
+  end
+end

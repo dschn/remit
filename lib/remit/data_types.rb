@@ -121,6 +121,7 @@ module Remit
     RECIPIENT = 'Recipient'
     SETUP_PREPAID = 'SetupPrepaid'
     SETUP_POSTPAID = 'SetupPostpaid'
+    EDIT = 'EditToken'
   end
 
   class PipelineStatusCode
@@ -129,6 +130,7 @@ module Remit
     SUCCESS_ABT       = 'SA'  # successful payment with Amazon balance
     SUCCESS_ACH       = 'SB'  # successful payment with bank transfer
     SUCCESS_CC        = 'SC'  # successful payment with credit card
+    SUCCESS_NO_CHANGE = 'SU'  # token has not changed
     ABORTED           = 'A'   # user aborted payment
     PAYMENT_METHOD_MISMATCH     = 'PE'  # user does not have payment method requested
     PAYMENT_METHOD_UNSUPPORTED  = 'NP'  # account doesn't support requested payment method

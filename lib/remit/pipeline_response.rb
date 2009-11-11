@@ -22,7 +22,8 @@ module Remit
         Remit::PipelineStatusCode::SUCCESS_ABT,
         Remit::PipelineStatusCode::SUCCESS_ACH,
         Remit::PipelineStatusCode::SUCCESS_CC,
-        Remit::PipelineStatusCode::SUCCESS_RECIPIENT_TOKEN_INSTALLED
+        Remit::PipelineStatusCode::SUCCESS_RECIPIENT_TOKEN_INSTALLED,
+        Remit::PipelineStatusCode::SUCCESS_NO_CHANGE
       ].include?(request_query[:status])
     end
 
